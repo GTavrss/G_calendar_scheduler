@@ -14,6 +14,7 @@ import numpy as np
     # 6- Montar um dumb_schedule
     
     
+    
 class Scheduler():
     
     def __init__(self, relative_week=0):
