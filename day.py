@@ -43,9 +43,10 @@ class Day():
             SPTz = pytz.timezone("America/Sao_Paulo") 
             end_ = datetime.datetime(d_.year,d_.month,d_.day,end,0,0,0,SPTz) - pd.to_timedelta('6 min')
             projected_start = datetime.datetime(d_.year,d_.month,d_.day,start,0,0,0,SPTz) - pd.to_timedelta('6 min')
-            while projected_start.replace(tzinfo=None) < end_.replace(tzinfo=None):
+            projected_end = projected_start + pd.to_timedelta(f"{event.duration} min") - pd.to_timedelta('1 min')
+
+            while projected_end.replace(tzinfo=None) < end_.replace(tzinfo=None):
                 valid = True
-                projected_end = projected_start + pd.to_timedelta(f"{event.duration} min") - pd.to_timedelta('1 min')
                 #-------Check for overlap --------------
                 for ev in events:
                     if not pd.to_datetime(ev.start_event).replace(tzinfo=None) > projected_end.replace(tzinfo=None):
@@ -60,7 +61,8 @@ class Day():
                                     projected_start.replace(tzinfo=None) <= start_time.replace(tzinfo=None) and projected_end.replace(tzinfo=None) >= end_time.replace(tzinfo=None)    ):
                                 valid = False
                                 projected_start = end_time + pd.to_timedelta('1 min')
-    
+                                projected_end = projected_start + pd.to_timedelta(f"{event.duration} min") - pd.to_timedelta('1 min')
+
                 #------------------------------------
                 if valid:
                     if not scheduled:
