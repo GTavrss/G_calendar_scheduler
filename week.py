@@ -44,7 +44,7 @@ class Week():
             else:
                 i=1
                 valid= False
-                while not valid and i <=6 :
+                while not valid and i <6 :
                     d = self.week_days[i]
                     if not d.full:
                         t = d.next_time(event)
@@ -58,7 +58,7 @@ class Week():
                         i=i+1
                 return times
         else:
-            return None
+            return [None]
 
 
 
@@ -69,38 +69,41 @@ class Week():
         else:
             times = [time]
         if not event.scheduled:
-            for t in times:
-                t = pd.to_datetime(t) #- pd.to_timedelta('6 min')
-                body_event = {
-                        "summary": f"{event.event_name}",
-                        "description": event.description + " __created_in_python__.",
-                        "colorId": event.colorId,
-                        "start": {
-                            "dateTime": f"{t.isoformat()}",
-                            "timeZone": "Brazil/East",
-                        },
-                        "end": {
-                            "dateTime": f"{(t+pd.to_timedelta(str(event.duration)+' min')).isoformat()}",
-                            "timeZone": "Brazil/East",
-                        },
-                        "reminders": {
-                            "useDefault": True,
-                        }}
-                service = build('calendar', 'v3', credentials=get_credentials())         
-                schedule = service.events().insert(calendarId=calendar_Id, body=body_event).execute()       
-                event.id.append(schedule['id'])
-                
-                temp = Event(schedule['summary'],pd.to_datetime(schedule['end']['dateTime'])
-                                         -pd.to_datetime(schedule['start']['dateTime']),schedule['summary'],True)
-                temp.id = [schedule['id']]
-                temp.start_event = schedule['start']['dateTime']
-                temp.end_event = schedule['end']['dateTime']
-                temp.event_dic = schedule
-                temp.scheduled = True
-                i = t.isoweekday()
-                self.week_days[i].events.append(temp)
-                #self.refresh_events()
-            event.scheduled = True 
+            if not (all( list( map( lambda x: x is None, times))) or len(times)==0):
+                for t in times:
+                    t = pd.to_datetime(t) #- pd.to_timedelta('6 min')
+                    body_event = {
+                            "summary": f"{event.event_name}",
+                            "description": event.description + " __created_in_python__.",
+                            "colorId": event.colorId,
+                            "start": {
+                                "dateTime": f"{t.isoformat()}",
+                                "timeZone": "Brazil/East",
+                            },
+                            "end": {
+                                "dateTime": f"{(t+pd.to_timedelta(str(event.duration)+' min')).isoformat()}",
+                                "timeZone": "Brazil/East",
+                            },
+                            "reminders": {
+                                "useDefault": True,
+                            }}
+                    service = build('calendar', 'v3', credentials=get_credentials())         
+                    schedule = service.events().insert(calendarId=calendar_Id, body=body_event).execute()       
+                    event.id.append(schedule['id'])
+                    
+                    temp = Event(schedule['summary'],pd.to_datetime(schedule['end']['dateTime'])
+                                             -pd.to_datetime(schedule['start']['dateTime']),schedule['summary'],True)
+                    temp.id = [schedule['id']]
+                    temp.start_event = schedule['start']['dateTime']
+                    temp.end_event = schedule['end']['dateTime']
+                    temp.event_dic = schedule
+                    temp.scheduled = True
+                    i = t.isoweekday()
+                    self.week_days[i].events.append(temp)
+                    #self.refresh_events()
+                event.scheduled = True
+            else:
+                print(f'Attention: Event "{event.event_name}" not scheduled')
             
     def delete_all_created_events(self):
         self.refresh_events()
