@@ -3,7 +3,6 @@ from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
 
 calendar_Id = 'your google email'
-
 class Event():
     def __init__(self, event_name, duration, category,scheduled:bool, priority = 0, divisible= False, daily= False):
         self.event_name = event_name
